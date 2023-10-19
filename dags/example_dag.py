@@ -15,6 +15,7 @@ import datetime
 
 from airflow import models
 from airflow.operators import bash
+from airflow.models.variable import Variable
 
 # If you are running Airflow in more than one time zone
 # see https://airflow.apache.org/docs/apache-airflow/stable/timezone.html
@@ -29,7 +30,7 @@ default_args = {
     "email_on_retry": False,
     "retries": 1,
     "retry_delay": datetime.timedelta(minutes=5),
-    "start_date": YESTERDAY,
+    "start_date": YESTERDAY,secret_filename
 }
 
 with models.DAG(
@@ -39,6 +40,7 @@ with models.DAG(
         schedule_interval=datetime.timedelta(days=1),
 ) as dag:
     # Print the dag_run id from the Airflow logs
+    secret = Variable.get('example-secret')
     print_dag_run_conf = bash.BashOperator(
-        task_id="print_dag_run_conf", bash_command="echo {{ dag_run.id }}"
+        task_id="print_dag_run_conf", bash_command="secret:" + secret
     )
