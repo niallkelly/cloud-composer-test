@@ -56,5 +56,5 @@ with models.DAG(
 
 
     print_dag_run_conf = bash.BashOperator(
-        task_id="print_dag_run_conf", bash_command="secret:" + secret_value
+        task_id="print_dag_run_conf", bash_command="echo secret:" + secret_value
     )
