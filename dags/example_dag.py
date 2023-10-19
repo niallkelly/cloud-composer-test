@@ -16,6 +16,7 @@ import datetime
 from airflow import models
 from airflow.operators import bash
 from airflow.models.variable import Variable
+import os
 
 # If you are running Airflow in more than one time zone
 # see https://airflow.apache.org/docs/apache-airflow/stable/timezone.html
@@ -33,6 +34,10 @@ default_args = {
     "start_date": YESTERDAY,
 }
 
+# Check if the environment variable TESTING is set
+testing_mode = os.environ.get("TESTING", "false").lower() == "true"
+
+
 with models.DAG(
         "composer_sample_dag",
         "catchup=False",
@@ -40,7 +45,13 @@ with models.DAG(
         schedule_interval=datetime.timedelta(days=1),
 ) as dag:
     # Print the dag_run id from the Airflow logs
-    secret = Variable.get('example-secret')
+
+    if testing_mode:
+        # Set a mocked secret variable for testing
+        mocked_secret = "mocked_secret_val"
+    else:
+        # Retrieve the actual secret from Airflow Variable
+        mocked_secret = Variable.get("example-secret")
     print_dag_run_conf = bash.BashOperator(
-        task_id="print_dag_run_conf", bash_command="secret:" + secret
+        task_id="print_dag_run_conf", bash_command="secret:" + mocked_secret
     )
